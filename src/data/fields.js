@@ -6,13 +6,14 @@ export const useSignupFields = () => {
         {
             id: "name",
             label: "Name",
+            name: "name",
             required: true,
             input: {
                 
                 props: {
                     
                     type: "text",
-                    placeholder: "Joe Bloggs"
+                    placeholder: "Richard Doe"
                 },
                 state: useFormInput("")
             }
@@ -20,13 +21,14 @@ export const useSignupFields = () => {
         {
             id: "email",
             label: "Email",
+            name: "email",
             required: true,
             input: {
                 
                 props: {
                     
                     type: "email",
-                    placeholder: "joe@bloggs.com"
+                    placeholder: "joe@rapidwristbands.com"
                 },
                 state: useFormInput("")
             }
@@ -34,6 +36,7 @@ export const useSignupFields = () => {
         {
             id: "password",
             label: "Password",
+            name: "password",
             required: true,
             input: {
                 
@@ -55,12 +58,13 @@ export const useLoginFields = () => {
         {
             id: "email",
             label: "Email",
+            name: "email",
             required: true,
             input: {
                 
                 props: {
                     type: "email",
-                    placeholder: "joe@bloggs.com"
+                    placeholder: "joe@rapidwristbands.com"
                 },
                 state: useFormInput("")
             }
@@ -68,6 +72,7 @@ export const useLoginFields = () => {
         {
             id: "password",
             label: "Password",
+            name: "password",
             required: true,
             input: {
                 

@@ -9,23 +9,56 @@ import { Wave } from '../components/Wave';
 import { useEffect, useState } from 'react';
 import { validateForm } from '../data/utils';
 import { useParams } from 'react-router';
+import axios from 'axios';
+import { useHistory } from "react-router-dom";
 
 const Login = () => {
     
     const params = useParams();
+    const history = useHistory();
 
     const fields = useLoginFields();
     const [ errors, setErrors ] = useState(false);
 
-    const login = () => {
+    const api = axios.create({
+        baseURL: `http://10.0.2.2:8089/api/v1`,
+      });
 
+    const login = () => {
         const errors = validateForm(fields);
         setErrors(errors);
 
-        if (!errors.length) {
+        const formData = {};
 
-            //  Submit your form here
+        if (!errors.length) {
+            fields.forEach((field) => {
+                formData[field.name] = field.input.state.value;
+            })
+
+            api.post('/auth', formData).then((res) => {
+                console.log("Auth Response", { response: res.data })
+                history.push("/home");
+            }).catch((err) => {
+                if (err.response && err.response.status && parseInt(err.response.status) === 422) {
+                    console.log("Invalid payload", { message: err.message, status: err.response.status, data: err.response.data })
+                    const responseErrors = err.response.data.errors;
+                    const inputErrors = [];
+
+                    for (let [key, val] of Object.entries(responseErrors)) {
+                        const currentField = fields.find((e) => e.name === key);
+                        inputErrors.push({
+                            id: currentField.id,
+                            message: val[0],
+                        })
+                    }
+
+                    setErrors(inputErrors)
+                } else {
+                    console.log("Error", { message: err.message, status: err.response.status})
+                }
+            })
         }
+
     }
 
     useEffect(() => {
@@ -67,7 +100,7 @@ const Login = () => {
 
                             { fields.map(field => {
 
-                                return <CustomField field={ field } errors={ errors } />;
+                                return <CustomField key={ field.id } field={ field } errors={ errors } />;
                             })}
 
                             <IonButton className="custom-button" expand="block" onClick={ login }>Login</IonButton>

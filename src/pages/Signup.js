@@ -1,5 +1,6 @@
 import { IonBackButton, IonButton, IonButtons, IonCardTitle, IonCol, IonContent, IonFooter, IonGrid, IonHeader, IonIcon, IonPage, IonRouterLink, IonRow, IonToolbar } from '@ionic/react';
 import styles from './Signup.module.scss';
+import axios from 'axios';
 
 import { arrowBack, shapesOutline } from "ionicons/icons";
 import CustomField from '../components/CustomField';
@@ -9,12 +10,18 @@ import { Wave } from '../components/Wave';
 import { useEffect, useState } from 'react';
 import { validateForm } from '../data/utils';
 import { useParams } from 'react-router';
+import { useHistory } from "react-router-dom";
 
 const Signup = () => {
 
     const params = useParams();
     const fields = useSignupFields();
     const [ errors, setErrors ] = useState(false);
+    const history = useHistory();
+
+    const api = axios.create({
+        baseURL: `http://10.0.2.2:8089/api/v1`,
+      });
 
     const createAccount = () => {
 
@@ -22,8 +29,39 @@ const Signup = () => {
         setErrors(errors);
 
         if (!errors.length) {
+            const formData = {};
 
-            //  Submit your form here
+            fields.forEach((field) => {
+                formData[field.name] = field.input.state.value;
+            })
+
+            // repeat the password for password confirmation
+            formData['password_confirmation'] = formData['password'];
+
+            console.log("SignUp Data", { formData });
+
+            // Will make the axios request to the backend from here
+            api.post('/register', formData).then((res) => {
+                console.log("Auth Response", { response: res.data });
+                history.push("/home");
+            }).catch((err) => {
+                if (err.response && err.response.status && parseInt(err.response.status) === 422) {
+                    console.log("Invalid payload", { message: err.message, status: err.response.status, data: err.response.data })
+                    const responseErrors = err.response.data.errors;
+                    const inputErrors = [];
+
+                    for (let [key, val] of Object.entries(responseErrors)) {
+                        const currentField = fields.find((e) => e.name === key);
+                        inputErrors.push({
+                            id: currentField.id,
+                            message: val[0],
+                        })
+                    }
+
+                    setErrors(inputErrors)
+                }
+                console.log("Error", { message: err.message })
+            })
         }
     }
 
@@ -66,7 +104,7 @@ const Signup = () => {
 
                             { fields.map(field => {
 
-                                return <CustomField field={ field } errors={ errors } />;
+                                return <CustomField key={ field.id } field={ field } errors={ errors } />;
                             })}
 
                             <IonButton className="custom-button" expand="block" onClick={ createAccount }>Create account</IonButton>
