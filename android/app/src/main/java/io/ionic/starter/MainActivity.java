@@ -1,4 +1,4 @@
-package io.ionic.starter;
+package com.humvite.ionicdemo;
 
 import android.os.Bundle;
 
